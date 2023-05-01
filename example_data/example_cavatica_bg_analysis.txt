@@ -1,0 +1,3 @@
+billing_group	analysis_type	analysis_id	total_cost	storage_cost	computation_cost	egress_cost	Tasks	Studio	time_started	time_finished
+KRC	TASK	6865-xxxxxx	1.261110	0.250272	1.010838	0.000000	1.261110	0	2023-04-12	2023-04-12
+KRC	TASK	ah3d-xxxxxx	1.565444	0.460701	1.104743	0.000000	1.565444	0	2023-04-12	2023-04-12
