@@ -23,18 +23,18 @@ library(zoo)
 library(readr)
 
 ## Connect to D3b data warehouse
-dw <- config::get()
-username <- dw$user
-password <- dw$pwd
-hostname <- "d3b-warehouse-aurora.cluster-cxxdzxepyea2.us-east-1.rds.amazonaws.com"
-database <- "postgres"
+# dw <- config::get()
+# username <- dw$user
+# password <- dw$pwd
+# hostname <- "d3b-warehouse-aurora.cluster-cxxdzxepyea2.us-east-1.rds.amazonaws.com"
+# database <- "postgres"
 
-con <- dbConnect(RPostgres::Postgres(),
-                 host = hostname,
-                 port = "5432",
-                 dbname = database,
-                 user = username,
-                 password = password)
+# con <- dbConnect(RPostgres::Postgres(),
+#                  host = hostname,
+#                  port = "5432",
+#                  dbname = database,
+#                  user = username,
+#                  password = password)
 
 # shinyapp UI
 ui <- navbarPage(
@@ -56,19 +56,26 @@ ui <- navbarPage(
                 id = "filters",
                 inline = FALSE,
                 params = list(
+                  billing_class = list(
+                    inputId = "group",
+                    title = a(icon("house"), HTML("&nbsp;"),
+                    strong("Select Billing Group Class"), style = "font-size:150%"),
+                    placeholder = "select"
+                  ),
                   billing_group = list(
                     inputId = "billing_group",
-                    title = a(icon("house"), HTML("&nbsp;"),
-                    strong("Select Billing group"), style = "font-size:150%"),
+                    title = a(icon("id-badge"), HTML("&nbsp;"),
+                    strong("Select Billing Group Name"), style = "font-size:150%"),
                     placeholder = "select"
                   )
                 )
               ),
-              span(htmlOutput("text"), style = "color:red"),
-              style = "height:180px"
+              span(htmlOutput("text"), style = "color:red; font-size: 10px;"),
+              style = "height:230px"
             ),
             column(
               width = 8,
+              br(),
               br(),
               p("This is a shinyApp visualizes the CAVATICA billing group ",
                 strong("current usage"),
@@ -167,13 +174,18 @@ ui <- navbarPage(
 server <- shinyServer(function(input, output, session) {
 
 ## pull dataframe from dataearehouse
-  all_analysis <- "SELECT * from bix_reporting.cavatica_bg_analysis;"
-  all_storage <-  "SELECT * from bix_reporting.cavatica_bg_storage;"
-  all_balance <-  "SELECT * from bix_reporting.cavatica_bg_balance;"
+  # all_analysis <- "SELECT * from bix_reporting.cavatica_bg_analysis;"
+  # all_storage <-  "SELECT * from bix_reporting.cavatica_bg_storage;"
+  # all_balance <-  "SELECT * from bix_reporting.cavatica_bg_balance;"
 
-  analysis <- dbGetQuery(con, all_analysis)
-  storage <- dbGetQuery(con, all_storage)
-  balance <- dbGetQuery(con, all_balance)
+  # analysis <- dbGetQuery(con, all_analysis)
+  # storage <- dbGetQuery(con, all_storage)
+  # balance <- dbGetQuery(con, all_balance)
+
+  analysis <- read.table("/Users/xiaoyan/Documents/work/project/airflow_dev/dags/billing_group/cavatica_bg_analysis.txt", sep = '\t',header = TRUE,check.names = FALSE)
+  storage <- read.table("/Users/xiaoyan/Documents/work/project/airflow_dev/dags/billing_group/cavatica_bg_storage.txt", sep = '\t',header = TRUE,check.names = FALSE)
+  balance <- read.table("/Users/xiaoyan/Documents/work/project/airflow_dev/dags/billing_group/cavatica_bg_balance.txt", sep = '\t',header = TRUE,check.names = FALSE)
+
   storage_new <- storage[!duplicated(storage), ]
   analysis_new <- analysis[!duplicated(analysis), ]
 
@@ -182,7 +194,7 @@ server <- shinyServer(function(input, output, session) {
     id = "filters",
     data = balance,
     inline = FALSE,
-    vars = "billing_group"
+    vars = c("group","billing_group")
   )
 
   show_table <- reactive({
@@ -262,8 +274,6 @@ server <- shinyServer(function(input, output, session) {
       hc_plotOptions(series = list(
         dataLabels =  list(format = "<b>{point.name}</b>:  {point.percentage:.2f} %")
       ))
-
-
   })
 
 ## Total Analysis Cost
@@ -292,7 +302,7 @@ server <- shinyServer(function(input, output, session) {
                     type = "line", lineWidth = 5, dashStyle = "ShortDot") %>%
       hc_add_series(data_task, hcaes(x= date,  y = Monthly_cost),
                     name = "Monthly Task", color = "#52BCA3",
-                    type = "line", lineWidth = 5) %>% 
+                    type = "line", lineWidth = 5) %>%
       hc_add_series(data_cruncher, hcaes(x= date,  y = Monthly_cost),
                     name = "Monthly DataStudio",
                     type = "line", lineWidth = 5) %>%
@@ -366,10 +376,10 @@ server <- shinyServer(function(input, output, session) {
     data_task <- data3 %>% filter(analysis_type == "TASK")
     data_cruncher <- data3 %>% dplyr::filter(analysis_type != "TASK")
 
-    highchart() %>% 
+    highchart() %>%
       hc_add_series(data3, hcaes(x = date,  y = Accumulate_cost),
                     name = "Accumulated", color = "#E58606",
-                    type = 'line', lineWidth = 5, dashStyle = "ShortDot") %>% 
+                    type = 'line', lineWidth = 5, dashStyle = "ShortDot") %>%
       hc_add_series(data_task, hcaes(x= date,  y = Monthly_cost),
                     name = "Monthly Task", color = "#52BCA3",
                     type = 'line', lineWidth = 5) %>%

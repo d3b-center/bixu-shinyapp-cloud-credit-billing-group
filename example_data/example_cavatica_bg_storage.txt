@@ -1,3 +1,0 @@
-billing_group	project_name	active_size	archived_size	price
-KRC	GH Ad Hoc	6.373614	0.000000	0.140219508
-KRC	GH Tumor	124.529171	0.000000	2.7396417619999998
