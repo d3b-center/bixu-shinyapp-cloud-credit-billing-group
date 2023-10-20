@@ -23,18 +23,18 @@ library(zoo)
 library(readr)
 
 ## Connect to D3b data warehouse
-# dw <- config::get()
-# username <- dw$user
-# password <- dw$pwd
-# hostname <- "d3b-warehouse-aurora.cluster-cxxdzxepyea2.us-east-1.rds.amazonaws.com"
-# database <- "postgres"
+dw <- config::get()
+username <- dw$user
+password <- dw$pwd
+hostname <- "d3b-warehouse-aurora.cluster-cxxdzxepyea2.us-east-1.rds.amazonaws.com"
+database <- "postgres"
 
-# con <- dbConnect(RPostgres::Postgres(),
-#                  host = hostname,
-#                  port = "5432",
-#                  dbname = database,
-#                  user = username,
-#                  password = password)
+con <- dbConnect(RPostgres::Postgres(),
+                 host = hostname,
+                 port = "5432",
+                 dbname = database,
+                 user = username,
+                 password = password)
 
 # shinyapp UI
 ui <- navbarPage(
@@ -174,17 +174,13 @@ ui <- navbarPage(
 server <- shinyServer(function(input, output, session) {
 
 ## pull dataframe from dataearehouse
-  # all_analysis <- "SELECT * from bix_reporting.cavatica_bg_analysis;"
-  # all_storage <-  "SELECT * from bix_reporting.cavatica_bg_storage;"
-  # all_balance <-  "SELECT * from bix_reporting.cavatica_bg_balance;"
+  all_analysis <- "SELECT * from bix_reporting.cavatica_bg_analysis;"
+  all_storage <-  "SELECT * from bix_reporting.cavatica_bg_storage;"
+  all_balance <-  "SELECT * from bix_reporting.cavatica_bg_balance;"
 
-  # analysis <- dbGetQuery(con, all_analysis)
-  # storage <- dbGetQuery(con, all_storage)
-  # balance <- dbGetQuery(con, all_balance)
-
-  analysis <- read.table("/Users/xiaoyan/Documents/work/project/airflow_dev/dags/billing_group/cavatica_bg_analysis.txt", sep = '\t',header = TRUE,check.names = FALSE)
-  storage <- read.table("/Users/xiaoyan/Documents/work/project/airflow_dev/dags/billing_group/cavatica_bg_storage.txt", sep = '\t',header = TRUE,check.names = FALSE)
-  balance <- read.table("/Users/xiaoyan/Documents/work/project/airflow_dev/dags/billing_group/cavatica_bg_balance.txt", sep = '\t',header = TRUE,check.names = FALSE)
+  analysis <- dbGetQuery(con, all_analysis)
+  storage <- dbGetQuery(con, all_storage)
+  balance <- dbGetQuery(con, all_balance)
 
   storage_new <- storage[!duplicated(storage), ]
   analysis_new <- analysis[!duplicated(analysis), ]
